@@ -66,6 +66,15 @@ contract Kickstart {
        
     }                      
     
+    function finalizeRequest () public {
+        // require only executed by manager
+        require(msg.sender == manager);
+        // require approvalCount >= numContributors/2
+        require ( requests[numRequest].approvalCount >= numContributors/2);
+        // send money to recipient (vendor). Public transaccion non payable.
+        requests[numRequest].recipient.transfer (requests[numRequest].amount);
+        
+    }
     
     function getBalance() public view returns(uint) {   // retorna la suma de contribuciones al proyecto
         return address(this).balance;                   // retorna el balance del smart contrcat. función this accede a SmartContract
