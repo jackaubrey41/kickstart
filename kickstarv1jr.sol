@@ -12,25 +12,53 @@ contract Kickstart {
         uint approvalCount;                             // Track number of approvals. Increase 1 with each approval.
     }
     
+    // Variables de tipo storage grabadas en el blockchain
     address public manager;                             // @ of person who is managin dthe campaign. Campaign argument
     uint public minimumContribution;                   // Minimum donation required to be approver. Campaign argument
     mapping ( uint => address ) public approversMap;    // list of addresses of contributors indexed
-    Request[] public requeslist;                        // List of requests created by mnanager in this campaign. Dinamic array
-
-    uint private numContributors;                                 // contributors count index
-  //  uint private amountContribution;
-
-    constructor (uint _minimumContribution) public {    // Constructor Campaign minimum contribution is argument
+    Request[] public requests;                        // List of requests created by mananager in this campaign. Dinamic array
+    uint private numContributors;                       // contributors count index
+    uint private numRequest;
+                                                            
+                                                            
+    constructor (uint _minimumContribution) public {    // Constructor Campaign. MinimumContribution is parameter. Argument must be introduced.
         manager = msg.sender;                           // who deploy is the manager
         minimumContribution = _minimumContribution;     // Init minimumContribution internal varialble
         numContributors = 0 ;                                     // Init index array contributors
+        numRequest = 0;
     }
     
     function contribute () public payable {             // Payable function
         require ( msg.value >= minimumContribution );   // Require that contribution is equal or major to minimumContribution
         numContributors++;                              // increase number of contributors and index of array
         approversMap[numContributors] = msg.sender;     // set @ in list of contributors
+        // falta comprobar que no se duplica el contribuidor aunque lo ideal es que pudiera incrementar su inversion en el proyecto. 
     }
+    
+   
+   
+    // public view es un call data de lectura
+    // public (payable or non-payable default) es una transaccion que consume gas
+    // la funcion es public (non-payable default) puesto que no añade al balance del contrato pero modifica variables generales en BC?????.
+    function createRequest (string _description, uint _amount, address _recipient) public {
+        require (msg.sender == manager );               // unicamente puede ejecutar un Request si es el manager
+        // falta por ejemplo requerir que como mínimo tengamos un contributor
+        // falta por requerir que la direccion destino no sea la del manager
+        // falta requerir que el importe sea com maximo el balance disponible
+        Request memory newRequest = Request({
+           description: _description,
+           amount: _amount,
+           recipient: _recipient,
+           complete: false,
+//         approvalsMap. por defecto el valor es 0x0 para cualquier @ potencial
+           approvalCount:0
+        });
+        
+        requests[numRequest] = newRequest;
+        numRequest++;                               // escribe en el blockcahin .....public non payable?º
+     }
+    
+    
     
     function getBalance() public view returns(uint) {   // retorna la suma de contribuciones al proyecto
         return address(this).balance;                   // retorna el balance del smart contrcat. función this accede a SmartContract
