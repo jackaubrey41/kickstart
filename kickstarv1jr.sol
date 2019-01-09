@@ -73,7 +73,8 @@ contract Kickstart {
         require ( requests[numRequest].approvalCount >= numContributors/2);
         // send money to recipient (vendor). Public transaccion non payable.
         requests[numRequest].recipient.transfer (requests[numRequest].amount);
-        
+        // declara Request completado
+        request[numRequest].complete = true;
     }
     
     function getBalance() public view returns(uint) {   // retorna la suma de contribuciones al proyecto
