@@ -58,6 +58,13 @@ contract Kickstart {
         numRequest++;                               // escribe en el blockcahin .....public non payable?º
      }
     
+    function ApproveRequest () public {             // Called to aprove
+       // require be contributor
+       // require not vote previously
+       // Add my @ to approvalsMap in current request structure
+        requests[numRequest].approvalsMap[msg.sender] = true; // mismo error que antes
+       
+    }                      
     
     
     function getBalance() public view returns(uint) {   // retorna la suma de contribuciones al proyecto
