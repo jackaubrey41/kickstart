@@ -55,6 +55,7 @@ contract Kickstart {
         });
         
         requests[numRequest] = newRequest;
+        requests.push(newRequest);                  // si es un array hay que realizar el push para escribir el valor
         numRequest++;                               // escribe en el blockcahin .....public non payable?º
      }
     
