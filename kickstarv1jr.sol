@@ -24,8 +24,8 @@ contract Kickstart {
     constructor (uint _minimumContribution) public {    // Constructor Campaign. MinimumContribution is parameter. Argument must be introduced.
         manager = msg.sender;                           // who deploy is the manager
         minimumContribution = _minimumContribution;     // Init minimumContribution internal varialble
-        numContributors = 0 ;                                     // Init index array contributors
-//        numRequest = 0;
+        numContributors = 0 ;                           // Init index of contributors mapping
+
     }
     
     function contribute () public payable {             // Payable function
@@ -42,9 +42,10 @@ contract Kickstart {
     // la funcion es public (non-payable default) puesto que no añade al balance del contrato pero modifica variables generales en BC?????.
     function createRequest (string _description, uint _amount, address _recipient) public {
         require (msg.sender == manager );               // unicamente puede ejecutar un Request si es el manager
-        // falta por ejemplo requerir que como mínimo tengamos un contributor
+        // permito crear un request aunque no tenga contributors pero no podra finalizar el request.
         // falta por requerir que la direccion destino no sea la del manager
         // falta requerir que el importe sea com maximo el balance disponible
+
         Request memory newRequest = Request({
            description: _description,
            amount: _amount,
@@ -60,20 +61,27 @@ contract Kickstart {
      }
     
     function ApproveRequest () public {             // Called to aprove
+       // require Request not finalize. No podemos votar si esta cerrado el request actual.
+       require (requests[requests.length-1].complete == false);
+       // requiere not be manager. No le dejamos votar al manager
+       require (msg.sender != manager);
        // require be contributor
        // require not vote previously
        // Add my @ to approvalsMap in current request structure
         requests[requests.length-1].approvalsMap[msg.sender] = true;
-       
+        // añadirmos un approver al approvalCount
+        requests[requests.length-1].approvalCount++;
+
     }                      
     
     function finalizeRequest () public {
         // require only executed by manager
         require(msg.sender == manager);
-        // require approvalCount >= numContributors/2
-//        require ( requests[numRequest].approvalCount >= numContributors/2);
+        // require approvalCount >= numContributors/2. Como mínimo necesitamos el voto afirmativo de la mitad +1 de los contributors.
+        require (requests[requests.length-1].approvalCount >= 1+numContributors/2);
         //send money to recipient (vendor). Public transaccion non payable.
-//      requests[numRequest].recipient.transfer (requests[numRequest].amount);
+        // la tranferencia la realiza en wei pero nuestra anotación se refiere a ethers 1 ether = 1*10^18 wei
+        requests[requests.length-1].recipient.transfer (requests[requests.length-1].amount*1000000000000000000);
         // declara Request completado cambiando el estado del variable complete a true 
         requests[requests.length-1].complete = true;
     }
@@ -82,4 +90,7 @@ contract Kickstart {
         return address(this).balance;                   // retorna el balance del smart contrcat. función this accede a SmartContract
     }
     
-}
+    function getMitadNumContributorsmas1 () public view returns (uint) {
+        return 1+numContributors/2; // retorna la parte entera el valor mitad
+    }
+    
