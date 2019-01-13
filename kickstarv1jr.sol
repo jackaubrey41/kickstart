@@ -18,14 +18,14 @@ contract Kickstart {
     mapping ( uint => address ) public approversMap;    // list of addresses of contributors indexed
     Request[] public requests;                        // List of requests created by mananager in this campaign. Dinamic array
     uint private numContributors;                       // contributors count index
-    uint private numRequest;
+ //   uint private numRequest;
                                                             
                                                             
     constructor (uint _minimumContribution) public {    // Constructor Campaign. MinimumContribution is parameter. Argument must be introduced.
         manager = msg.sender;                           // who deploy is the manager
         minimumContribution = _minimumContribution;     // Init minimumContribution internal varialble
         numContributors = 0 ;                                     // Init index array contributors
-        numRequest = 0;
+//        numRequest = 0;
     }
     
     function contribute () public payable {             // Payable function
@@ -50,20 +50,20 @@ contract Kickstart {
            amount: _amount,
            recipient: _recipient,
            complete: false,
-//         approvalsMap. por defecto el valor es 0x0 para cualquier @ potencial
+//         approvalsMap. Por defecto el valor es 0x0 para cualquier @ potencial
            approvalCount:0
         });
         
-        requests[numRequest] = newRequest;
+//      requests[requests.length] = newRequest;     // ¡¡¡ con esta expresión no funciona la transacción¡¡¡
         requests.push(newRequest);                  // si es un array hay que realizar el push para escribir el valor
-        numRequest++;                               // escribe en el blockcahin .....public non payable?º
+        
      }
     
     function ApproveRequest () public {             // Called to aprove
        // require be contributor
        // require not vote previously
        // Add my @ to approvalsMap in current request structure
-        requests[numRequest].approvalsMap[msg.sender] = true; // mismo error que antes
+        requests[requests.length-1].approvalsMap[msg.sender] = true;
        
     }                      
     
@@ -71,14 +71,15 @@ contract Kickstart {
         // require only executed by manager
         require(msg.sender == manager);
         // require approvalCount >= numContributors/2
-        require ( requests[numRequest].approvalCount >= numContributors/2);
-        // send money to recipient (vendor). Public transaccion non payable.
-        requests[numRequest].recipient.transfer (requests[numRequest].amount);
-        // declara Request completado
-        requests[numRequest].complete = true;
+//        require ( requests[numRequest].approvalCount >= numContributors/2);
+        //send money to recipient (vendor). Public transaccion non payable.
+//      requests[numRequest].recipient.transfer (requests[numRequest].amount);
+        // declara Request completado cambiando el estado del variable complete a true 
+        requests[requests.length-1].complete = true;
     }
     
     function getBalance() public view returns(uint) {   // retorna la suma de contribuciones al proyecto
         return address(this).balance;                   // retorna el balance del smart contrcat. función this accede a SmartContract
     }
+    
 }
