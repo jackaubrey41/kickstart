@@ -2,6 +2,13 @@ pragma solidity ^0.4.25;
 
 contract Kickstart {
     
+    // struct investor
+    struct Investor {
+        address wallet;
+        string name;
+        // posible variable de balanceInvestor para acumular varias aportaciones. 
+    }
+    
     //struct of Request
     struct Request {
         string description;                             // Purpose of Request
@@ -13,26 +20,32 @@ contract Kickstart {
     }
     
     // Variables de tipo storage grabadas en el blockchain
-    address public manager;                             // @ of person who is managin dthe campaign. Campaign argument
+    address public manager;                             // @ of person who is managin campaign. Campaign argument
     uint public minimumContribution;                   // Minimum donation required to be approver. Campaign argument
     mapping ( uint => address ) public approversMap;    // list of addresses of contributors indexed
+    mapping ( address => Investor) public investorsMap;
     Request[] public requests;                        // List of requests created by mananager in this campaign. Dinamic array
     uint private numContributors;                       // contributors count index
- //   uint private numRequest;
-                                                            
+                            
                                                             
     constructor (uint _minimumContribution) public {    // Constructor Campaign. MinimumContribution is parameter. Argument must be introduced.
         manager = msg.sender;                           // who deploy is the manager
         minimumContribution = _minimumContribution;     // Init minimumContribution internal varialble
         numContributors = 0 ;                           // Init index of contributors mapping
-
     }
     
-    function contribute () public payable {             // Payable function
-        require ( msg.value >= minimumContribution );   // Require that contribution is equal or major to minimumContribution
-        numContributors++;                              // increase number of contributors and index of array
-        approversMap[numContributors] = msg.sender;     // set @ in list of contributors
-        // falta comprobar que no se duplica el contribuidor aunque lo ideal es que pudiera incrementar su inversion en el proyecto. 
+    function contribute (string _name) public payable {             // Payable function
+        require ( msg.value >= minimumContribution );       // Require that contribution is equal or major to minimumContribution
+        require ( investorsMap[msg.sender].wallet == 0x0);   // Para que no se duplique, aunque seria interesante que pudiera ampliar la aportacion.
+        numContributors++;                                  // increase number of contributors and index of array
+        approversMap[numContributors] = msg.sender;         // set @ in list of contributors
+
+        Investor memory newInvestor = Investor({
+            wallet: msg.sender,
+            name: _name
+        });    
+        investorsMap[msg.sender] = newInvestor;       
+       
     }
     
    
@@ -65,8 +78,10 @@ contract Kickstart {
        require (requests[requests.length-1].complete == false);
        // requiere not be manager. No le dejamos votar al manager
        require (msg.sender != manager);
-       // require be contributor
+        // require be investor. Requiere que la direccion que mapea el contributor sea diferente de 0x0.
+        require(investorsMap[msg.sender].wallet != 0x0 );// test ok
        // require not vote previously
+        require(requests[requests.length-1].approvalsMap[msg.sender] == false );//test ok
        // Add my @ to approvalsMap in current request structure
         requests[requests.length-1].approvalsMap[msg.sender] = true;
         // añadirmos un approver al approvalCount
@@ -94,3 +109,4 @@ contract Kickstart {
         return 1+numContributors/2; // retorna la parte entera el valor mitad
     }
     
+}
