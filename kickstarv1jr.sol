@@ -49,28 +49,24 @@ contract Kickstart {
     }
     
    
-   
-    // public view es un call data de lectura
-    // public (payable or non-payable default) es una transaccion que consume gas
     // la funcion es public (non-payable default) puesto que no añade al balance del contrato pero modifica variables generales en BC?????.
     function createRequest (string _description, uint _amount, address _recipient) public {
         require (msg.sender == manager );               // unicamente puede ejecutar un Request si es el manager
         // permito crear un request aunque no tenga contributors pero no podra finalizar el request.
-        // falta por requerir que la direccion destino no sea la del manager
-        // falta requerir que el importe sea com maximo el balance disponible
-
+        // el importe sea com maximo el balance disponible
+        require( _amount <= address(this).balance);
+        // La direccion destino se autoriza que sea la del manager
+        
         Request memory newRequest = Request({
            description: _description,
            amount: _amount,
            recipient: _recipient,
            complete: false,
-//         approvalsMap. Por defecto el valor es 0x0 para cualquier @ potencial
            approvalCount:0
         });
         
 //      requests[requests.length] = newRequest;     // ¡¡¡ con esta expresión no funciona la transacción¡¡¡
         requests.push(newRequest);                  // si es un array hay que realizar el push para escribir el valor
-        
      }
     
     function ApproveRequest () public {             // Called to aprove
